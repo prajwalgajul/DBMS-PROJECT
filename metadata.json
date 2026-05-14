@@ -1,0 +1,6 @@
+{
+  "name": "TrackLine Reservations",
+  "description": "A clean and efficient train reservation system for managing routes, passengers, and bookings.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
