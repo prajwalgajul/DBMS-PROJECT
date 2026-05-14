@@ -49,3 +49,4 @@ Vercel now supports this project directly, including the `/api` endpoints.
 - Bookings and routes are stored in memory, so data resets whenever the Render service restarts.
 - Vercel serverless functions also use in-memory demo data, so state can reset between cold starts or new instances.
 - Local development uses one Express server for both the frontend and API.
+- Vercel deployment uses explicit serverless route files under [`api/`](./api) for reliability.
