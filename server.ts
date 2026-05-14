@@ -39,11 +39,29 @@ let bookings: Booking[] = [];
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT || 3000);
+  const allowedOrigin = process.env.CORS_ORIGIN;
 
   app.use(express.json());
+  app.use((req, res, next) => {
+    if (allowedOrigin) {
+      res.header("Access-Control-Allow-Origin", allowedOrigin);
+      res.header("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
+      res.header("Access-Control-Allow-Headers", "Content-Type");
+    }
+
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    next();
+  });
 
   // --- API Routes ---
+
+  app.get("/healthz", (req, res) => {
+    res.json({ ok: true });
+  });
 
   // Get all routes
   app.get("/api/routes", (req, res) => {

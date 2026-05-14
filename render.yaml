@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: dbms-project
+    runtime: node
+    plan: free
+    autoDeployTrigger: commit
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: CORS_ORIGIN
+        sync: false

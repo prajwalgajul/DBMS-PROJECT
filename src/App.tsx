@@ -38,6 +38,16 @@ interface Booking {
   status: 'confirmed' | 'cancelled';
 }
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
+function apiUrl(path: string) {
+  if (!API_BASE_URL) {
+    return path;
+  }
+
+  return `${API_BASE_URL}${path}`;
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'search' | 'bookings' | 'admin'>('search');
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -70,8 +80,8 @@ export default function App() {
     setLoading(true);
     try {
       const [routesRes, bookingsRes] = await Promise.all([
-        fetch('/api/routes'),
-        fetch('/api/bookings')
+        fetch(apiUrl('/api/routes')),
+        fetch(apiUrl('/api/bookings'))
       ]);
       const routesData = await routesRes.json();
       const bookingsData = await bookingsRes.json();
@@ -88,7 +98,7 @@ export default function App() {
   const handleAddRoute = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/routes', {
+      const res = await fetch(apiUrl('/api/routes'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newRoute)
@@ -116,7 +126,7 @@ export default function App() {
 
     setBookingLoading(true);
     try {
-      const res = await fetch('/api/bookings', {
+      const res = await fetch(apiUrl('/api/bookings'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -147,7 +157,7 @@ export default function App() {
     if (!confirm('Are you sure you want to cancel this booking?')) return;
     
     try {
-      const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' });
+      const res = await fetch(apiUrl(`/api/bookings/${id}`), { method: 'DELETE' });
       if (!res.ok) throw new Error('Cancellation failed');
       await fetchData();
     } catch (err: any) {
