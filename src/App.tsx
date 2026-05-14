@@ -48,6 +48,23 @@ function apiUrl(path: string) {
   return `${API_BASE_URL}${path}`;
 }
 
+async function parseApiResponse(response: Response) {
+  let payload: any = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message = payload?.message || `Request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<'search' | 'bookings' | 'admin'>('search');
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -78,17 +95,21 @@ export default function App() {
 
   const fetchData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [routesRes, bookingsRes] = await Promise.all([
         fetch(apiUrl('/api/routes')),
         fetch(apiUrl('/api/bookings'))
       ]);
-      const routesData = await routesRes.json();
-      const bookingsData = await bookingsRes.json();
+      const [routesData, bookingsData] = await Promise.all([
+        parseApiResponse(routesRes),
+        parseApiResponse(bookingsRes)
+      ]);
       setRoutes(routesData);
       setBookings(bookingsData);
     } catch (err) {
-      setError('Failed to load data. Please check if the server is running.');
+      const message = err instanceof Error ? err.message : 'Unable to load train data.';
+      setError(message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -103,7 +124,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newRoute)
       });
-      if (!res.ok) throw new Error('Failed to add route');
+      await parseApiResponse(res);
       await fetchData();
       setNewRoute({
         trainNumber: '',
@@ -136,10 +157,7 @@ export default function App() {
         })
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Booking failed');
-      }
+      await parseApiResponse(res);
 
       await fetchData(); // Refresh data
       setSelectedRoute(null);
@@ -158,7 +176,7 @@ export default function App() {
     
     try {
       const res = await fetch(apiUrl(`/api/bookings/${id}`), { method: 'DELETE' });
-      if (!res.ok) throw new Error('Cancellation failed');
+      await parseApiResponse(res);
       await fetchData();
     } catch (err: any) {
       alert(err.message);
@@ -242,6 +260,7 @@ export default function App() {
             <div>
               <h3 className="font-semibold text-red-900">Server Connection Issue</h3>
               <p className="text-red-700 text-sm mt-1">{error}</p>
+              <p className="text-red-500 text-xs mt-2">If this is on Vercel, redeploy after pulling the latest GitHub changes so the `/api` functions are included.</p>
               <button 
                 onClick={fetchData}
                 className="mt-4 bg-red-100 hover:bg-red-200 text-red-900 px-4 py-2 rounded-lg text-sm font-medium transition-colors"

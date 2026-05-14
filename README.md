@@ -36,15 +36,16 @@ Render hosts the Node.js server and API for this project.
 
 ## Deploy to Vercel
 
-Vercel hosts the frontend build for this project.
+Vercel now supports this project directly, including the `/api` endpoints.
 
 1. Import the same GitHub repo into Vercel
 2. Vercel will detect [vercel.json](./vercel.json)
-3. Add `VITE_API_BASE_URL` with your Render service URL, for example `https://your-app.onrender.com`
+3. You can leave `VITE_API_BASE_URL` empty to use Vercel's built-in API routes
 4. Deploy
-5. Update Render's `CORS_ORIGIN` to your final Vercel URL, then redeploy Render if needed
+5. Only set `VITE_API_BASE_URL` if you explicitly want the frontend to call a separate Render backend
 
 ## Notes
 
 - Bookings and routes are stored in memory, so data resets whenever the Render service restarts.
+- Vercel serverless functions also use in-memory demo data, so state can reset between cold starts or new instances.
 - Local development uses one Express server for both the frontend and API.
